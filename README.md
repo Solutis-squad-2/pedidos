@@ -7,7 +7,7 @@ Busca por ID:<BR>
 Busca por CPF:<BR>
       MÉTODO POST: http://localhost:8080/pedidos/cpf<BR>
 
---------  MUDA A 'FORMA DE PAGAMENTO NO JSON PARA OS CADASTROS  -----------      
+--------  MUDA A "FORMA DE PAGAMENTO" NO JSON PARA OS CADASTROS  -----------      
 Cadastro pedido Débito:<BR>
       MÉTODO POST: http://localhost:8080/pedidos/cadastro<BR>
 Cadastro pedido Crédito:<BR>
