@@ -1,21 +1,28 @@
 package pedidos.demo.service;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pedidos.demo.dto.EmailDTO;
+import pedidos.demo.dto.PaymentDTO;
 import pedidos.demo.dto.PedidosDTO;
-import pedidos.demo.model.Pedido;
-import pedidos.demo.model.PedidoCredito;
-import pedidos.demo.model.PedidoDebito;
-import pedidos.demo.model.PedidoPix;
+import pedidos.demo.model.*;
 import pedidos.demo.repository.PedidosRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class PedidosService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private PedidosRepository pedidosRepository;
@@ -49,10 +56,12 @@ public class PedidosService {
                 break;
             case PIX:
                 pedido = new PedidoPix();
+
                 break;
             default:
                 throw new IllegalArgumentException("Forma de pagamento não reconhecida");
         }
+
         // Mapeia os demais campos
 
         modelMapper.map(dto, pedido);
@@ -61,7 +70,7 @@ public class PedidosService {
         PedidosDTO respostaDTO = modelMapper.map(pedido, PedidosDTO.class);
 
         if (pedido instanceof PedidoPix) {
-            respostaDTO.setChavePix(((PedidoPix) pedido).getChavePix());
+            respostaDTO.setChavePix(PedidoPix.CHAVE_PIX);
         }
 
         return respostaDTO;
@@ -87,4 +96,49 @@ public class PedidosService {
                 .map(pedido -> new PedidosDTO(pedido))
                 .collect(Collectors.toList());
     }
+
+    public ResponseEntity<PedidosDTO> atualizarRespostaPedido(Long id, StatusPagamento status, LocalDateTime dataProcessamento){
+        Optional<Pedido> pedidoOptional = pedidosRepository.findById(id);
+
+        if(pedidoOptional.isPresent()){
+            Pedido pedido = pedidoOptional.get();
+
+            pedido.setStatusPagamento(status);
+            pedido.setDataProcessamento(dataProcessamento);
+
+            Pedido pedidoAtualizado = pedidosRepository.save(pedido);
+
+            PedidosDTO resposta = new PedidosDTO(pedidoAtualizado);
+
+            return ResponseEntity.ok(resposta);
+        }else{
+            throw new IllegalArgumentException("Pedido não encontrado!");
+        }
+    }
+
+//  ---------  CONVERSÃO E ENVIO PARA PAYMENT E EMAIL  ------------
+
+    public PaymentDTO converterParaPaymentDTO(PedidosDTO pedido){
+
+        return  modelMapper.map(pedido, PaymentDTO.class);
+    }
+
+    public void enviarPedidoParaPayment(PedidosDTO pedido){
+        PaymentDTO paymentDTO = converterParaPaymentDTO(pedido);
+
+        rabbitTemplate.convertAndSend("pedido.cadastro", paymentDTO);
+    }
+
+    public EmailDTO converterParaEmailDTO(PedidosDTO pedido){
+
+        return modelMapper.map(pedido, EmailDTO.class);
+
+    }
+
+    public void enviarPedidoParaEmail(PedidosDTO pedido){
+        EmailDTO emailDTO = converterParaEmailDTO(pedido);
+
+        rabbitTemplate.convertAndSend("pedido.email-notificacao", emailDTO);
+    }
+
 }

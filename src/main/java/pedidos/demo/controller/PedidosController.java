@@ -1,6 +1,8 @@
 package pedidos.demo.controller;
 
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,9 @@ public class PedidosController {
 
     @Autowired
     private PedidosService pedidosService;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @GetMapping
     public ResponseEntity<List<PedidosDTO>> buscarPedidos(){
@@ -41,6 +46,11 @@ public class PedidosController {
     @PostMapping("/cadastro")
     public ResponseEntity<PedidosDTO> cadastrar(@RequestBody PedidosDTO dto){
         PedidosDTO pedido = pedidosService.cadastrar(dto);
+
+/*
+        Message message = new Message (("Pedido criado com o id: " + pedido.getId()).getBytes());
+        rabbitTemplate.send("pedido.cadastro", message);
+*/
 
         return ResponseEntity.ok(pedido);
     }
@@ -69,8 +79,12 @@ public class PedidosController {
            pedidosService.deletarPorId(id);
            return ResponseEntity.noContent().build();
        }
+    }
 
-
+/*
+    @PatchMapping("atualizar/{id}")
+    public ResponseEntity atualizarPedido(@PathVariable Long id){
 
     }
+    */
 }

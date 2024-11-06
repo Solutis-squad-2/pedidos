@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @DiscriminatorValue("PIX")
 public class PedidoPix extends Pedido{
 
-    private static final String CHAVE_PIX = "1a1cd635-e894-477c-9ae0-c50b5c1bee53";
+    public static final String CHAVE_PIX = "1a1cd635-e894-477c-9ae0-c50b5c1bee53";
     private String chavePix;
 
     public PedidoPix() {

@@ -6,9 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @NoArgsConstructor
@@ -47,5 +50,25 @@ public abstract class Pedido {
     @Positive
     private BigDecimal valor;
 
+    @Enumerated(EnumType.STRING)
+    private StatusPagamento statusPagamento;
 
+    @CreationTimestamp
+    private LocalDateTime dataCadastro;
+
+    private LocalDateTime dataProcessamento = null;
+
+
+    public Pedido(Long id, String nome, String cpf, FormaDePagamento formaDePagamento, String email, String telefone, String descricaoPedido, BigDecimal valor) {
+        this.id = id;
+        this.nome = nome;
+        this.cpf = cpf;
+        this.formaDePagamento = formaDePagamento;
+        this.email = email;
+        this.telefone = telefone;
+        this.descricaoPedido = descricaoPedido;
+        this.valor = valor;
+        this.statusPagamento = StatusPagamento.AGUARDANDO;
+        this.dataCadastro = dataCadastro;
+    }
 }

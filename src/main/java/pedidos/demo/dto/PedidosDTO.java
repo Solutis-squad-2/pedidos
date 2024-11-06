@@ -1,13 +1,14 @@
 package pedidos.demo.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pedidos.demo.model.FormaDePagamento;
 import pedidos.demo.model.Pedido;
+import pedidos.demo.model.PedidoPix;
+import pedidos.demo.model.StatusPagamento;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,8 +26,11 @@ public class PedidosDTO {
     private String descricaoPedido;
     private BigDecimal valor;
     private String chavePix;
+    private LocalDateTime dataCadastro;
+    private StatusPagamento statusPagamento = StatusPagamento.AGUARDANDO;
+    private LocalDateTime dataProcessamento;
 
-    public PedidosDTO(Long id, String nome, String cpf, String email, String telefone, FormaDePagamento formaDePagamento, String numeroCartao, String codigoCartao, int parcelas, String descricaoPedido, BigDecimal valor, String chavePix) {
+    public PedidosDTO(Long id, String nome, String cpf, String email, String telefone, FormaDePagamento formaDePagamento, String numeroCartao, String codigoCartao, int parcelas, String descricaoPedido, BigDecimal valor, StatusPagamento statusPagamento, LocalDateTime dataCadastro) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
@@ -38,7 +42,9 @@ public class PedidosDTO {
         this.parcelas = parcelas;
         this.descricaoPedido = descricaoPedido;
         this.valor = valor;
-        this.chavePix = chavePix;
+        //this.chavePix = chavePix;
+        this.dataProcessamento = dataCadastro;
+        this.statusPagamento = statusPagamento;
     }
 
     public PedidosDTO() {
@@ -57,6 +63,11 @@ public class PedidosDTO {
             this.telefone = pedido.getTelefone();
             this.descricaoPedido = pedido.getDescricaoPedido();
             this.valor = pedido.getValor();
+            this.chavePix = getChavePix();
+            this.statusPagamento = pedido.getStatusPagamento();
+            this.dataCadastro = pedido.getDataCadastro();
+
+
         }
     }
 
